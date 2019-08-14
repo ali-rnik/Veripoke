@@ -16,7 +16,7 @@ $nl->exit_if_error();
 
 for my $mod ( $nl->modules()) {
 	for my $sig ($mod->ports_sorted()) {
-		print $sig->direction(), " ", $sig->name(), " ", $sig->type(), 
+		print $sig->name(), " ", $sig->direction(), " ", $sig->type(), 
 			"\n";
 	}
 }
