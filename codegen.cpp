@@ -2,8 +2,6 @@
 #include <fstream>
 #include <map>
 
-#define LINE_SIZE 1000
-
 struct PortProp {
 	std::string name;
 	int value;
@@ -15,11 +13,53 @@ std::map<std::string, PortProp> inPort, outPort;
 
 int getPortsProp(std::string modName);
 int codeGen(std::string modName);
+int genVerilatorObj(std::string modName);
+int genBin(std::string modName);
 
 int main(int argc, char **argv)
 {
-	getPortsProp(argv[0]);
-	codeGen(argv[0]);
+	getPortsProp(argv[1]);
+	codeGen(argv[1]);
+	genVerilatorObj(argv[1]);
+	genBin(argv[1]);
+	return 0;
+}
+
+int genBin(std::string modName)
+{
+	std::string command, includeDirectory, src, output;
+
+	modName.pop_back();
+	modName.pop_back();
+
+	includeDirectory= " -I/usr/share/verilator/include -I./obj_dir ";
+	src = " /usr/share/verilator/include/verilated.cpp ";
+	src += modName + ".cpp ";
+	src += " obj_dir/V" + modName + "__ALL.a ";
+	output = " -o " + modName;
+
+	command = "g++ " + includeDirectory + src + output;
+
+	if (system(command.data()) == -1)
+		return -1;
+
+	return 0;
+}
+
+int genVerilatorObj(std::string modName)
+{
+	std::string command;
+
+	command = "verilator -Wall -cc " + modName;
+	if (system(command.data()) == -1)
+		return -1;
+
+	modName.pop_back();
+	modName.pop_back();
+
+	command = "make -C obj_dir -f V" + modName + ".mk";
+	if (system(command.data()) == -1)
+		return -1;
 
 	return 0;
 }
@@ -29,9 +69,10 @@ int codeGen(std::string modName)
 	std::ofstream outfile;
 	std::map<std::string, PortProp>::iterator it;
 
-	modName += ".cpp";
+	modName.pop_back();
+	modName.pop_back();
 
-	outfile.open(modName, std::ofstream::out | std::ofstream::trunc);
+	outfile.open(modName + ".cpp", std::ofstream::out | std::ofstream::trunc);
 
 	outfile << "#include <stdio.h>" << std::endl;
 	outfile << "#include <stdlib.h>" << std::endl;
@@ -49,7 +90,7 @@ int codeGen(std::string modName)
 
 	outfile << std::endl;
 
-	outfile << "void set_port_value();" << std::endl;
+	outfile << "void setPortValue(std::string, int);" << std::endl;
 
 	outfile << std::endl;
 
@@ -58,19 +99,19 @@ int codeGen(std::string modName)
 	outfile << "\tstd::string portname;" << std::endl;
 	outfile << "\tint value;" << std::endl;
 	outfile << "\tVerilated::commandArgs(argc, argv);" << std::endl;
-	outfile << "\ttb = new Vthruwire;" << std::endl;
+	outfile << "\ttb = new V" << modName  << ";"<< std::endl;
 
 	outfile << std::endl;
 
 	outfile << "\twhile (1) {" << std::endl;
 	outfile << "\t\tstd::cin >> portname >> value;" << std::endl;
-	outfile << "\t\tset_port_value(portname, value);" << std::endl;
+	outfile << "\t\tsetPortValue(portname, value);" << std::endl;
 	outfile << "\t}" << std::endl;
 	outfile << "}" << std::endl;
 
 	outfile << std::endl;
 
-	outfile << "void set_port_value(std::string portname, int value)" << std::endl;
+	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
 	outfile << "{" << std::endl;
 
 	for (it = outPort.begin(); it != outPort.end(); it++) {
@@ -85,6 +126,7 @@ int codeGen(std::string modName)
 
 	outfile << "}" << std::endl;
 
+	outfile.close();
 	return 0;
 }
 
@@ -96,7 +138,7 @@ int getPortsProp(std::string modName)
 	inPort.clear();
 	outPort.clear();
 
-	command = "./ports_extraction.pl " + modName + " > ports.txt";
+	command = "ports_extraction.pl " + modName + " > ports.txt";
 
 	if (system(command.data()) == -1)
 		return -1;
@@ -115,6 +157,7 @@ int getPortsProp(std::string modName)
 			outPort[portname].type = porttype;
 		}
 	}
+	infile.close();
 
 	return 0;
 }
