@@ -114,7 +114,7 @@ int codeGen(std::string modName)
 	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
 	outfile << "{" << std::endl;
 
-	for (it = outPort.begin(); it != outPort.end(); it++) {
+	for (it = inPort.begin(); it != inPort.end(); it++) {
 		outfile << "\tif ( portname == \"" << it->second.name << "\")" << std::endl;
 		outfile << "\t\t tb->" << it->second.name << " = value;" << std::endl;
 	}
