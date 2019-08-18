@@ -2,6 +2,8 @@
 #include <fstream>
 #include <map>
 
+#define DATA_PATH "/usr/local/share/data/"
+
 struct PortProp {
 	std::string name;
 	int value;
@@ -132,10 +134,10 @@ int codeGen(std::string modName)
 		std::endl;
 	outfile << std::endl;
 
-	outfile << "\tmoduleImage = gtk_image_new_from_file" << 
-		"(\"./module.png\");" << std::endl;
+	outfile << "\tmoduleImage = gtk_image_new_from_file(\"" << DATA_PATH <<
+		"module.png\");" << std::endl;
 	outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
-		"moduleImage, 2, 0, 3, 3);" << std::endl;
+		"moduleImage, 2, 0, 3, 10);" << std::endl;
 	outfile << std::endl;
 
 	int rowCnt = 0;
