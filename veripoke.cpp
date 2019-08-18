@@ -151,6 +151,9 @@ int getPortsProp(std::string modName)
 		infile >> portdir;
 		infile >> porttype;
 
+		if (porttype == "reg")
+			infile >> porttype;
+
 		if (portdir == "in") {
 			inPort[portname].name = portname;
 			inPort[portname].type = porttype;
