@@ -94,6 +94,7 @@ int codeGen(std::string modName)
 
 	outfile << std::endl;
 
+	// main
 	outfile << "int main(int argc, char **argv)" << std::endl;
 	outfile << "{" << std::endl;
 	outfile << "\tstd::string portname;" << std::endl;
@@ -111,6 +112,7 @@ int codeGen(std::string modName)
 
 	outfile << std::endl;
 
+	// setPortValue
 	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
 	outfile << "{" << std::endl;
 
