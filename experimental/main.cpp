@@ -23,6 +23,7 @@ GtkWidget *out, *outA, *equal, *equalA, *greater, *greaterA, *lesser, *lesserA;
 
 void callbackBut(GtkWidget *button, GtkWidget *entry);
 void setPortValue(std::string, int);
+void guiSetup();
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +31,12 @@ int main(int argc, char *argv[])
 	Verilated::commandArgs(argc, argv);
 	tb = new Valu;
 
+	guiSetup();
+	return 0;
+}
+
+void guiSetup()
+{
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), "Main");
 
@@ -86,8 +93,6 @@ int main(int argc, char *argv[])
 
 	gtk_widget_show_all(window);
 	gtk_main();
-
-	return 0;
 }
 
 void callbackBut(GtkWidget *button, GtkWidget *entry)

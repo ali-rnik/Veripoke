@@ -72,61 +72,146 @@ int codeGen(std::string modName)
 	modName.pop_back();
 	modName.pop_back();
 
-	outfile.open(modName + ".cpp", std::ofstream::out | std::ofstream::trunc);
+	outfile.open(modName + ".cpp", std::ofstream::out | 
+		std::ofstream::trunc);
 
+	// headers and global variables
+	outfile << "#include <gtk/gtk.h>" << std::endl;
 	outfile << "#include <stdio.h>" << std::endl;
 	outfile << "#include <stdlib.h>" << std::endl;
+	outfile << std::endl;
 	outfile << "#include <iostream>" << std::endl;
 	outfile << "#include <map>" << std::endl;
 	outfile << "#include <string>" << std::endl;
-	outfile << "#include <mutex>" << std::endl;
-	outfile << "#include <thread>" << std::endl;
+	outfile << std::endl;
 	outfile << "#include \"verilated.h\"" << std::endl;
 	outfile << "#include \"V" << modName << ".h\"" << std::endl;
-
 	outfile << std::endl;
 
 	outfile << "V" << modName << " *tb;" << std::endl;
-
 	outfile << std::endl;
+	outfile << "GtkWidget *window, *grid, *moduleImage;" << std::endl;
 
+	for (it = inPort.begin(); it != inPort.end(); it++)
+		outfile << "GtkWidget " << "*" << it->name << ", *" << 
+			it->name << "E" << std::endl;
+
+	for (it = outPort.begin(); it != outPort.end(); it++)
+		outfile << "GtkWidget " << "*" << it->name << ", *" << 
+			it->name << "A" << std::endl;
+
+	outfile << "void callbackBut(GtkWidget *button, GtkWidget *entry);" << 
+		std::endl;
 	outfile << "void setPortValue(std::string, int);" << std::endl;
-
+	outfile << "void guiSetup();" << std::endl;
 	outfile << std::endl;
 
 	// main
 	outfile << "int main(int argc, char **argv)" << std::endl;
 	outfile << "{" << std::endl;
-	outfile << "\tstd::string portname;" << std::endl;
-	outfile << "\tint value;" << std::endl;
+	outfile << "\tgtk_init(&argc, &argv);" << std::endl;
 	outfile << "\tVerilated::commandArgs(argc, argv);" << std::endl;
 	outfile << "\ttb = new V" << modName  << ";"<< std::endl;
-
+	outfile << "\tguiSetup();"<< std::endl;
+	outfile << "\treturn 0;"<< std::endl;
+	outfile << "}" << std::endl;
 	outfile << std::endl;
 
-	outfile << "\twhile (1) {" << std::endl;
-	outfile << "\t\tstd::cin >> portname >> value;" << std::endl;
-	outfile << "\t\tsetPortValue(portname, value);" << std::endl;
-	outfile << "\t}" << std::endl;
-	outfile << "}" << std::endl;
+	// guiSetup
+	outfile << "void guiSetup()" << std::endl;
+	outfile << "{" << std::endl;
+	outfile << "\twindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);" << 
+		std::endl;
+	outfile << "\tgtk_window_set_title(GTK_WINDOW(window)," << 
+		" \"Veripoke\");" << std::endl;
+	outfile << std::endl;
 
+	outfile << "\tgrid = gtk_grid_new();" << std::endl;
+	outfile << "\tgtk_container_add(GTK_CONTAINER(window), grid);" << 
+		std::endl;
+	outfile << std::endl;
+
+	outfile << "\tmoduleImage = gtk_image_new_from_file" << 
+		"(\"./module.png\");" << std::endl;
+	outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
+		"moduleImage, 2, 0, 3, 3);" << std::endl;
+	outfile << std::endl;
+
+	int rowCnt = 0;
+	for (it = inPort.begin(); it != inPort.end(); it++) {
+		outfile << "\t" << it->name << " = " << 
+			"gtk_button_new_with_label(" << "\"" << it->name << 
+			"\");" << std::endl;
+		outfile << "\tgtk_widget_set_name(" << it-name << 
+			", \"" << it-name << "\");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
+			", 0, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << "\t" << it-name << "E = gtk_entry_new();" << 
+			std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
+			"E, 1, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << std::endl;
+		rowCnt++;
+	}
+
+	rowCnt = 0;
+	for (it = outPort.begin(); it != outPort.end(); it++) {
+		outfile << "\t" << it->name << " = gtk_label_new(\"" << 
+			it->name << ": \");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
+			", 9, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << "\t" << it->name "A = gtk_label_new(\"" << 
+			it->name << "A\");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
+			"A, 10, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << std::endl;
+		rowCnt++;
+	}
+
+	for (it = inPort.begin(); it != inPort.end(); it++) {
+		outfile << "\tg_signal_connect(G_OBJECT(" << it->name << 
+			"), \"clicked\", G_CALLBACK(callbackBut), " << 
+			"GTK_WIDGET(" << it->name << "E));" << std::endl;
+	}
+	outfile << std::endl;
+
+	outfile << "\tgtk_widget_show_all(window);" << std::endl;
+	outfile << "\tgtk_main();" << std::endl;
+
+	outfile << "}" << std::endl;
+	outfile << std::endl;
+
+	// callbackBut
+	outfile << "void callbackBut(GtkWidget *button, GtkWidget *entry)" << 
+		std::endl;
+	outfile << "{" << std::endl;
+	outfile << "\tint entryValue = atoi(gtk_entry_get_text" << 
+		"(GTK_ENTRY(entry)));" << std::endl;
+	outfile << "\tsetPortValue((std::string) " << 
+		"gtk_widget_get_name(button), entryValue);" << std::endl;
+	outfile << "\tstd::cout << gtk_widget_get_name(button) << \" :: \"" <<
+		"entryValue << std::endl;" << std::endl;
+	outfile << "}" << std::endl;
 	outfile << std::endl;
 
 	// setPortValue
 	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
 	outfile << "{" << std::endl;
-
 	for (it = inPort.begin(); it != inPort.end(); it++) {
-		outfile << "\tif ( portname == \"" << it->second.name << "\")" << std::endl;
-		outfile << "\t\t tb->" << it->second.name << " = value;" << std::endl;
+		outfile << "\tif ( portname == \"" << it->second.name << "\")" 
+			<< std::endl;
+		outfile << "\t\t tb->" << it->second.name << " = value;" << 
+			std::endl;
 	}
-
 	outfile << std::endl;
-
 	outfile << "\ttb->eval();" << std::endl;
-
-
+	for (it = outPort.begin(); it != outPort.end(); it++) {
+		outfile << "gtk_label_set_text(GTK_LABEL(" << it->name << 
+			"A), std::to_string(tb->" << it-name << ").data());" 
+			<< std::endl;
+	}
 	outfile << "}" << std::endl;
+	outfile << std::endl;
 
 	outfile.close();
 	return 0;
