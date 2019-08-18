@@ -10,7 +10,6 @@ struct PortProp {
 
 std::map<std::string, PortProp> inPort, outPort;
 
-
 int getPortsProp(std::string modName);
 int codeGen(std::string modName);
 int genVerilatorObj(std::string modName);
@@ -32,7 +31,8 @@ int genBin(std::string modName)
 	modName.pop_back();
 	modName.pop_back();
 
-	includeDirectory= " -I/usr/share/verilator/include -I./obj_dir ";
+	includeDirectory= " -I/usr/share/verilator/include -I./obj_dir " + 
+		"`pkg-config --libs --cflags gtk+-3.0`";
 	src = " /usr/share/verilator/include/verilated.cpp ";
 	src += modName + ".cpp ";
 	src += " obj_dir/V" + modName + "__ALL.a ";
