@@ -31,8 +31,8 @@ int genBin(std::string modName)
 	modName.pop_back();
 	modName.pop_back();
 
-	includeDirectory= " -I/usr/share/verilator/include -I./obj_dir " + 
-		"`pkg-config --libs --cflags gtk+-3.0`";
+	includeDirectory = " -I/usr/share/verilator/include -I./obj_dir ";
+	includeDirectory += "`pkg-config --libs --cflags gtk+-3.0` ";
 	src = " /usr/share/verilator/include/verilated.cpp ";
 	src += modName + ".cpp ";
 	src += " obj_dir/V" + modName + "__ALL.a ";
@@ -93,12 +93,13 @@ int codeGen(std::string modName)
 	outfile << "GtkWidget *window, *grid, *moduleImage;" << std::endl;
 
 	for (it = inPort.begin(); it != inPort.end(); it++)
-		outfile << "GtkWidget " << "*" << it->name << ", *" << 
-			it->name << "E" << std::endl;
+		outfile << "GtkWidget " << "*" << it->second.name << ", *" << 
+			it->second.name << "E;" << std::endl;
 
 	for (it = outPort.begin(); it != outPort.end(); it++)
-		outfile << "GtkWidget " << "*" << it->name << ", *" << 
-			it->name << "A" << std::endl;
+		outfile << "GtkWidget " << "*" << it->second.name << ", *" << 
+			it->second.name << "A;" << std::endl;
+	outfile << std::endl;
 
 	outfile << "void callbackBut(GtkWidget *button, GtkWidget *entry);" << 
 		std::endl;
@@ -139,39 +140,45 @@ int codeGen(std::string modName)
 
 	int rowCnt = 0;
 	for (it = inPort.begin(); it != inPort.end(); it++) {
-		outfile << "\t" << it->name << " = " << 
-			"gtk_button_new_with_label(" << "\"" << it->name << 
-			"\");" << std::endl;
-		outfile << "\tgtk_widget_set_name(" << it-name << 
-			", \"" << it-name << "\");" << std::endl;
-		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
-			", 0, " << rowCnt << ", 1, 1);" << std::endl;
-		outfile << "\t" << it-name << "E = gtk_entry_new();" << 
-			std::endl;
-		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
-			"E, 1, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << "\t" << it->second.name << " = " << 
+			"gtk_button_new_with_label(" << "\"" << 
+			it->second.name << "\");" << std::endl;
+		outfile << "\tgtk_widget_set_name(" << it->second.name << 
+			", \"" << it->second.name << "\");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
+			it->second.name << ", 0, " << rowCnt << ", 1, 1);" 
+			<< std::endl;
+		outfile << "\t" << it->second.name << "E = gtk_entry_new();" 
+			<< std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
+			it->second.name << "E, 1, " << rowCnt << ", 1, 1);" 
+			<< std::endl;
 		outfile << std::endl;
 		rowCnt++;
 	}
 
 	rowCnt = 0;
 	for (it = outPort.begin(); it != outPort.end(); it++) {
-		outfile << "\t" << it->name << " = gtk_label_new(\"" << 
-			it->name << ": \");" << std::endl;
-		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
-			", 9, " << rowCnt << ", 1, 1);" << std::endl;
-		outfile << "\t" << it->name "A = gtk_label_new(\"" << 
-			it->name << "A\");" << std::endl;
-		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << it-name << 
-			"A, 10, " << rowCnt << ", 1, 1);" << std::endl;
+		outfile << "\t" << it->second.name << " = gtk_label_new(\"" << 
+			it->second.name << ": \");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
+			it->second.name << ", 9, " << rowCnt << ", 1, 1);" 
+			<< std::endl;
+		outfile << "\t" << it->second.name << "A = gtk_label_new(\"" 
+			<< it->second.name << "A\");" << std::endl;
+		outfile << "\tgtk_grid_attach(GTK_GRID(grid), " << 
+			it->second.name << "A, 10, " << rowCnt << ", 1, 1);" 
+			<< std::endl;
 		outfile << std::endl;
 		rowCnt++;
 	}
 
 	for (it = inPort.begin(); it != inPort.end(); it++) {
-		outfile << "\tg_signal_connect(G_OBJECT(" << it->name << 
+		outfile << "\tg_signal_connect(G_OBJECT(" << 
+			it->second.name << 
 			"), \"clicked\", G_CALLBACK(callbackBut), " << 
-			"GTK_WIDGET(" << it->name << "E));" << std::endl;
+			"GTK_WIDGET(" << it->second.name << "E));" 
+			<< std::endl;
 	}
 	outfile << std::endl;
 
@@ -190,7 +197,7 @@ int codeGen(std::string modName)
 	outfile << "\tsetPortValue((std::string) " << 
 		"gtk_widget_get_name(button), entryValue);" << std::endl;
 	outfile << "\tstd::cout << gtk_widget_get_name(button) << \" :: \"" <<
-		"entryValue << std::endl;" << std::endl;
+		" << entryValue << std::endl;" << std::endl;
 	outfile << "}" << std::endl;
 	outfile << std::endl;
 
@@ -198,17 +205,18 @@ int codeGen(std::string modName)
 	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
 	outfile << "{" << std::endl;
 	for (it = inPort.begin(); it != inPort.end(); it++) {
-		outfile << "\tif ( portname == \"" << it->second.name << "\")" 
+		outfile << "\tif (portname == \"" << it->second.name << "\")" 
 			<< std::endl;
 		outfile << "\t\t tb->" << it->second.name << " = value;" << 
 			std::endl;
 	}
 	outfile << std::endl;
 	outfile << "\ttb->eval();" << std::endl;
+	outfile << std::endl;
 	for (it = outPort.begin(); it != outPort.end(); it++) {
-		outfile << "gtk_label_set_text(GTK_LABEL(" << it->name << 
-			"A), std::to_string(tb->" << it-name << ").data());" 
-			<< std::endl;
+		outfile << "\tgtk_label_set_text(GTK_LABEL(" << it->second.name 
+			<< "A), std::to_string(tb->" << it->second.name << 
+			").data());" << std::endl;
 	}
 	outfile << "}" << std::endl;
 	outfile << std::endl;
