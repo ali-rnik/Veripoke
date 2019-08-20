@@ -8,7 +8,8 @@ suffering testbenches, instead with pretty graphical interface. something like
 [Verilator](https://www.veripool.org/wiki/verilator) 
 to convert Verilog code to C++ code (systemC).
 
-Verilog::Netlist is used to extract module ports.
+[Verilog::Netlist](https://metacpan.org/pod/Verilog::Netlist) 
+is used to extract module ports names and attributes.
 
 ## Installation in Archlinux
 Before running Makefile you need to install iverilog, gcc, perl and gtk3:
