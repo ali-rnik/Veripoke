@@ -12,10 +12,10 @@ to convert Verilog code to C++ code (systemC).
 is used to extract module ports names and attributes.
 
 ## Installation in Archlinux
-Before running Makefile you need to install iverilog, gcc, perl and gtk3:
+Before running Makefile you need to install iverilog, gcc, perl, verilator and gtk3:
 
 ```
-    sudo pacman -S gcc perl gtk3 iverilog
+    sudo pacman -S gcc perl gtk3 iverilog verilator
     cpan  Verilog::Netlist
 ```
 
