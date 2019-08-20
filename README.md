@@ -84,4 +84,4 @@ Now only run "alu" binary file:
 ```
 And you will endup something like this:
 
-![veripoke](https://github.com/Strongsaxophone/veripoke/screenshot.png)
+![veripoke](./screenshot.png)
