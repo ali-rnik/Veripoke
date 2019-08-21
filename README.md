@@ -16,7 +16,7 @@ Before running Makefile you need to install iverilog, gcc, perl, verilator and g
 
 ```
     sudo pacman -S gcc perl gtk3 iverilog verilator
-    cpan  Verilog::Netlist
+    sudo cpan  Verilog::Netlist
 ```
 
 Then use Makefile to compile and install:
