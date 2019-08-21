@@ -40,7 +40,7 @@ int genBin(std::string modName)
 	src += " obj_dir/V" + modName + "__ALL.a ";
 	output = " -o " + modName;
 
-	command = "g++ " + includeDirectory + src + output;
+	command = "g++ -g " + includeDirectory + src + output;
 
 	if (system(command.data()) == -1)
 		return -1;
@@ -231,16 +231,20 @@ int getPortsProp(std::string modName)
 {
 	std::string command, portname, portdir, porttype;
 	std::ifstream infile;
+	std::string ports_list_file = "./";
 
 	inPort.clear();
 	outPort.clear();
 
-	command = "ports_extraction.pl " + modName + " > ports.txt";
+	ports_list_file += modName.substr(0, modName.size()-2);
+	ports_list_file += "_ports.txt";
+
+	command = "ports_extraction.pl " + modName + " > " + ports_list_file;
 
 	if (system(command.data()) == -1)
 		return -1;
 
-	infile.open("./ports.txt", std::ifstream::in);
+	infile.open(ports_list_file.data(), std::ifstream::in);
 	while (!infile.eof()) {
 		infile >> portname;
 		infile >> portdir;
