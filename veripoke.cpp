@@ -90,6 +90,10 @@ int codeGen(std::string modName)
 	outfile << "#include \"V" << modName << ".h\"" << std::endl;
 	outfile << std::endl;
 
+	outfile << "#define TWOP63 9223372036854775808" << std::endl;
+	outfile << "#define TWOP64MM 18446744073709551615" << std::endl;
+	outfile << std::endl;
+
 	outfile << "V" << modName << " *tb;" << std::endl;
 	outfile << std::endl;
 	outfile << "GtkWidget *window, *grid, *moduleImage;" << std::endl;
@@ -105,7 +109,7 @@ int codeGen(std::string modName)
 
 	outfile << "void callbackBut(GtkWidget *button, GtkWidget *entry);" << 
 		std::endl;
-	outfile << "void setPortValue(std::string, int);" << std::endl;
+	outfile << "void setPortValue(std::string, long long);" << std::endl;
 	outfile << "void guiSetup();" << std::endl;
 	outfile << std::endl;
 
@@ -204,8 +208,13 @@ int codeGen(std::string modName)
 	outfile << std::endl;
 
 	// setPortValue
-	outfile << "void setPortValue(std::string portname, int value)" << std::endl;
+	outfile << "void setPortValue(std::string portname, long long value)" 
+		<< std::endl;
 	outfile << "{" << std::endl;
+	outfile << "\tlong long signedOut;" << std::endl;
+
+	outfile << std::endl;
+
 	for (it = inPort.begin(); it != inPort.end(); it++) {
 		outfile << "\tif (portname == \"" << it->second.name << "\")" 
 			<< std::endl;
@@ -216,9 +225,21 @@ int codeGen(std::string modName)
 	outfile << "\ttb->eval();" << std::endl;
 	outfile << std::endl;
 	for (it = outPort.begin(); it != outPort.end(); it++) {
-		outfile << "\tgtk_label_set_text(GTK_LABEL(" << it->second.name 
-			<< "A), std::to_string(tb->" << it->second.name << 
-			").data());" << std::endl;
+		outfile << "\tif (tb->" << it->second.name << " >= TWOP63 ) {" 
+			<< std::endl;
+		outfile << "\t\tsignedOut = -1 * ((TWOP64MM - tb->" << 
+			it->second.name << ") + 1);" << std::endl;
+		outfile << "\t\tgtk_label_set_text(GTK_LABEL(" << 
+			it->second.name << 
+			"A), std::to_string(signedOut).data());" << std::endl;
+		outfile << "\t} else {" << std::endl;
+		outfile << "\t\tgtk_label_set_text(GTK_LABEL(" << 
+			it->second.name << "A), std::to_string(tb->" 
+			<< it->second.name << ").data());" << std::endl;
+		outfile << "\t}" << std::endl;
+
+		outfile << std::endl;
+
 	}
 	outfile << "}" << std::endl;
 	outfile << std::endl;
