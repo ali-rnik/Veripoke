@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <sstream>
 
 #define DATA_PATH "/usr/local/share/data/"
 
@@ -250,10 +251,10 @@ int codeGen(std::string modName)
 
 int getPortsProp(std::string modName)
 {
-	std::string command, portname, portdir, porttype;
+	std::stringstream sst;
+	std::string command, portname, portdir, porttype, line;
 	std::ifstream infile;
 	std::string ports_list_file = "./";
-
 	inPort.clear();
 	outPort.clear();
 
@@ -267,12 +268,11 @@ int getPortsProp(std::string modName)
 
 	infile.open(ports_list_file.data(), std::ifstream::in);
 	while (!infile.eof()) {
-		infile >> portname;
-		infile >> portdir;
-		infile >> porttype;
+		getline(infile, line);
+		sst.str(line);
 
-		if (porttype == "reg")
-			infile >> porttype;
+		sst >> portname;
+		sst >> portdir;
 
 		if (portdir == "in") {
 			inPort[portname].name = portname;
