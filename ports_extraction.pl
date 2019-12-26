@@ -10,8 +10,6 @@ my $nl = new Verilog::Netlist();
 $nl->read_file(filename => $ARGV[0]);
 
 # read in any sub modules
-$nl->link();
-$nl->lint();
 $nl->exit_if_error();
 
 for my $mod ( $nl->modules()) {
